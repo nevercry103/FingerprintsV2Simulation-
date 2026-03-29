@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>HMI Popups — Bel Vietnam ST3</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Barlow:wght@300;400;500;600;700;800&display=swap');
+
+/* NOTE: all CSS custom properties use double hyphen `--` */
+:root {
+  --bg:     #07090d;
+  --bg1:    #0c1018;
+  --bg2:    #111622;
+  --bg3:    #18202e;
+  --bg4:    #202d40;
+  --bg5:    #2a3a52;
+  --line:   #1e2d45;
+  --blue:   #2463eb;
+  --blue-l: #3b82f6;
+  --cyan:   #06b6d4;
+  --cyan-l: #22d3ee;
+  --green:  #10b981;
+  --green-l:#34d399;
+  --gbg:    #052e16;
+  --red:    #ef4444;
+  --red-l:  #fca5a5;
+  --rbg:    #1c0808;
+  --amber:  #f59e0b;
+  --ambg:   #1c1004;
+  --ambl:   #fcd34d;
+  --purp:   #8b5cf6;
+  --pbg:    #1a0f2e;
+  --t0:     #f1f5f9;
+  --t1:     #cbd5e1;
+  --t2:     #94a3b8;
+  --t3:     #64748b;
+  --t4:     #475569;
+  --lv4-bg: #052e16; --lv4-b: #10b981; --lv4-t: #34d399;
+  --lv3-bg: #0c1a3a; --lv3-b: #3b82f6; --lv3-t: #93c5fd;
+  --lv2-bg: #1a0f2e; --lv2-b: #8b5cf6; --lv2-t: #c4b5fd;
+  --lv1-bg: #1c1004; --lv1-b: #f59e0b; --lv1-t: #fcd34d;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  font-family: 'Barlow', sans-serif;
+  min-height: 100vh;
+  color: var(--t1);
+  overflow-x: hidden;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(37,99,235,.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(37,99,235,.02) 1px, transparent 1px);
+  background-size: 36px 36px;
+  pointer-events: none; z-index: 0;
+}
+
+/* ── APP SHELL ─────────────────────────────── */
+.app { position: relative; z-index: 1; }
+
+/* ── TOP BAR ───────────────────────────────── */
+.topbar {
+  background: rgba(7,9,13,.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+  height: 52px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px;
+  position: sticky; top: 0; z-index: 100;
+}
+.tb-logo { display: flex; align-items: center; gap: 10px; }
+.tb-mark {
+  width: 28px; height: 28px;
+  background: linear-gradient(135deg, var(--blue), var(--cyan));
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 800; color: white;
+}
+.tb-name { font-size: 13px; font-weight: 700; color: var(--t0); }
+.tb-sub  { font-size: 9px; color: var(--t4); font-family: 'JetBrains Mono', monospace; }
+.tb-sim  {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--ambg); border: 1px solid var(--amber);
+  padding: 3px 10px; border-radius: 4px;
+}
+.sim-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--amber); animation: blink 1.4s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+.sim-txt { font-size: 9px; font-weight: 700; color: var(--ambl); font-family: 'JetBrains Mono', monospace; }
+
+/* ── MENU BAR ──────────────────────────────── */
+.menubar {
+  background: var(--bg1);
+  border-bottom: 1px solid var(--line);
+  display: flex; align-items: center;
+  padding: 0 20px; gap: 4px;
+  overflow-x: auto;
+}
+.menubar::-webkit-scrollbar { display: none; }
+.menu-btn {
+  padding: 12px 18px;
+  font-size: 11px; font-weight: 600;
+  color: var(--t3); cursor: pointer;
+  border: none; background: none;
+  font-family: 'Barlow', sans-serif;
+  letter-spacing: .3px;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap; flex-shrink: 0;
+  transition: all .15s;
+}
+.menu-btn:hover { color: var(--t1); }
+.menu-btn.active { color: var(--cyan-l); border-bottom-color: var(--cyan); }
+.menu-sep { width: 1px; height: 20px; background: var(--line); margin: 0 4px; flex-shrink: 0; }
+
+/* ── SIM CONTROLS ──────────────────────────── */
+.sim-bar {
+  background: rgba(18,22,34,.6);
+  border: 1.5px dashed var(--bg5);
+  border-radius: 8px; margin: 16px 20px 0;
+  padding: 10px 14px;
+  display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+}
+.sim-sec { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.sim-lbl {
+  font-size: 9px; font-weight: 700; color: var(--t4);
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 1px; text-transform: uppercase;
+  white-space: nowrap;
+}
+.cb {
+  padding: 4px 10px; border-radius: 4px;
+  font-size: 10px; font-weight: 700; cursor: pointer;
+  border: 1px solid var(--bg5); background: var(--bg2);
+  color: var(--t3); transition: all .12s;
+  font-family: 'Barlow', sans-serif; white-space: nowrap;
+}
+.cb:hover { border-color: var(--blue); color: var(--t1); }
+.cb.on { background: var(--bg3); border-color: var(--blue); color: var(--cyan-l); }
+
+/* ── POPUP CONTAINER ───────────────────────── */
+.popup-wrap {
+  display: flex; justify-content: center;
+  padding: 20px;
+}
+
+/* ── SHARED POPUP STYLES ───────────────────── */
+.popup {
+  border-radius: 10px; overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0,0,0,.6);
+  width: 100%;
+  animation: popIn .25s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes popIn {
+  from { opacity:0; transform: scale(.95) translateY(8px); }
+  to   { opacity:1; transform: scale(1)  translateY(0); }
+}
+.p-hdr {
+  height: 40px; display: flex; align-items: center;
+  justify-content: space-between; padding: 0 16px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.p-title {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 2px; text-transform: uppercase;
+  font-family: 'JetBrains Mono', monospace;
+}
+.p-clock {
+  font-size: 9px; color: var(--t4);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ── POPUP 1 — WELCOME ─────────────────────── */
+#p1 { background: var(--bg1); border: 2px solid var(--blue); max-width: 460px; }
+.w-level-strip {
+  height: 5px;
+  transition: background .3s;
+}
+.w-body { padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; }
+.w-greeting {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--bg2); border: 1px solid var(--line);
+  border-radius: 10px; padding: 14px;
+}
+.w-avatar {
+  width: 52px; height: 52px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; font-weight: 800;
+  font-family: 'JetBrains Mono', monospace;
+  flex-shrink: 0; transition: all .3s;
+}
+.w-name { font-size: 16px; font-weight: 700; color: var(--t0); }
+.w-empid { font-size: 10px; color: var(--t3); font-family: 'JetBrains Mono', monospace; margin-top: 3px; }
+.w-badge {
+  margin-left: auto; padding: 4px 10px; border-radius: 5px;
+  font-size: 10px; font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  flex-shrink: 0;
+}
+.w-countdown-section { display: flex; flex-direction: column; gap: 8px; }
+.w-cd-row { display: flex; justify-content: space-between; align-items: baseline; }
+.w-cd-lbl { font-size: 9px; color: var(--t4); text-transform: uppercase; letter-spacing: 1px; }
+.w-cd-num {
+  font-size: 32px; font-weight: 800;
+  font-family: 'JetBrains Mono', monospace;
+  transition: color .3s;
+}
+.w-progress {
+  height: 6px; background: var(--bg4); border-radius: 3px; overflow: hidden;
+}
+.w-progress-fill {
+  height: 100%; border-radius: 3px;
+  transition: width 1s linear, background .3s;
+}
+.w-info-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+}
+.w-info-cell {
+  background: var(--bg3); border: 1px solid var(--line);
+  border-radius: 7px; padding: 10px 12px;
+}
+.w-ic-lbl { font-size: 8px; color: var(--t4); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+.w-ic-val { font-size: 12px; font-weight: 600; color: var(--t0); font-family: 'JetBrains Mono', monospace; }
+.w-btn-row { display: flex; gap: 8px; }
+.w-btn {
+  flex: 1; padding: 11px; border-radius: 7px; border: none;
+  font-size: 12px; font-weight: 700;
+  font-family: 'Barlow', sans-serif; cursor: pointer;
+  transition: all .12s;
+}
+.w-logout { background: var(--bg4); color: var(--t2); }
+.w-logout:hover { background: var(--bg5); color: var(--t0); }
+
+/* ── POPUP 2 — ACCESS ERROR ─────────────────── */
+#p2 { background: var(--bg1); max-width: 400px; }
+.e-body {
+  padding: 24px 20px;
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+}
+.e-icon-wrap {
+  width: 72px; height: 72px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 34px;
+  animation: errPulse 2s ease infinite;
+}
+@keyframes errPulse {
+  0%,100% { transform: scale(1); }
+  50%     { transform: scale(1.06); }
+}
+.e-title {
+  font-size: 17px; font-weight: 800;
+  text-align: center; letter-spacing: .3px;
+}
+.e-msg {
+  font-size: 11px; color: var(--t2); text-align: center;
+  line-height: 1.7; font-family: 'JetBrains Mono', monospace;
+}
+.e-code-row {
+  width: 100%; display: flex; justify-content: space-between; align-items: center;
+  background: var(--bg3); border: 1px solid var(--line);
+  border-radius: 6px; padding: 8px 12px;
+}
+.e-code-lbl { font-size: 9px; color: var(--t4); font-family: 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: .8px; }
+.e-code-val { font-size: 12px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+.e-autoclose { width: 100%; }
+.e-ac-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+.e-ac-lbl { font-size: 9px; color: var(--t4); font-family: 'JetBrains Mono', monospace; }
+.e-ac-bar { height: 3px; background: var(--bg4); border-radius: 2px; overflow: hidden; }
+.e-ac-fill { height: 100%; border-radius: 2px; transition: width 1s linear; }
+.e-btn-row { display: flex; gap: 8px; width: 100%; }
+.e-btn {
+  flex: 1; padding: 10px; border-radius: 6px; border: none;
+  font-size: 12px; font-weight: 700;
+  font-family: 'Barlow', sans-serif; cursor: pointer; transition: all .12s;
+}
+.e-close { background: var(--bg4); color: var(--t2); }
+.e-retry { background: var(--blue); color: white; }
+
+/* ── POPUP 3 — USER MANAGEMENT ──────────────── */
+#p3 { background: var(--bg1); border: 2px solid var(--line); max-width: 900px; }
+.um-tabs {
+  display: flex; background: var(--bg2);
+  border-bottom: 1px solid var(--line);
+}
+.um-tab {
+  padding: 12px 22px; font-size: 11px; font-weight: 700;
+  color: var(--t4); cursor: pointer; border: none; background: none;
+  font-family: 'Barlow', sans-serif; letter-spacing: .3px;
+  border-bottom: 2px solid transparent; transition: all .15s;
+}
+.um-tab.on { color: var(--cyan-l); border-bottom-color: var(--cyan); }
+
+/* REGISTER TAB */
+.reg-body { padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media(max-width: 700px){ .reg-body { grid-template-columns: 1fr; } }
+.r-section { display: flex; flex-direction: column; gap: 12px; }
+.r-sec-lbl {
+  font-size: 9px; font-weight: 700; color: var(--t4);
+  letter-spacing: 2px; text-transform: uppercase;
+  font-family: 'JetBrains Mono', monospace;
+  padding-bottom: 8px; border-bottom: 1px solid var(--line);
+}
+.r-field { display: flex; flex-direction: column; gap: 5px; }
+.r-lbl { font-size: 10px; font-weight: 600; color: var(--t2); letter-spacing: .5px; text-transform: uppercase; }
+.req { color: var(--red); }
+.r-inp {
+  background: var(--bg2); border: 1px solid var(--bg5);
+  border-radius: 6px; padding: 10px 12px;
+  color: var(--t0); font-size: 13px;
+  font-family: 'JetBrains Mono', monospace;
+  outline: none; transition: all .15s; width: 100%;
+}
+.r-inp:focus { border-color: var(--blue); background: var(--bg3); box-shadow: 0 0 0 3px rgba(36,99,235,.12); }
+.r-inp.hi { border-color: var(--blue); background: var(--bg3); }
+.r-inp.ok { border-color: var(--green); }
+.r-inp.err { border-color: var(--red); }
+.r-hint { font-size: 9px; color: var(--t4); font-family: 'JetBrains Mono', monospace; }
+.fg2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* LEVEL BUTTONS */
+.lv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.lvb {
+  padding: 11px 8px; border-radius: 7px; border: 1.5px solid transparent;
+  text-align: center; cursor: pointer; transition: all .15s;
+  user-select: none;
+}
+.lvb.dim { opacity: .15; cursor: not-allowed; }
+.lvb.sel { box-shadow: 0 0 0 2.5px white; transform: scale(1.03); }
+.lvb:not(.dim):not(.sel):hover { opacity: .85; }
+.lvb-n { font-size: 20px; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+.lvb-name { font-size: 10px; font-weight: 700; margin-top: 2px; letter-spacing: .3px; }
+.lvb-range { font-size: 8px; opacity: .7; font-family: 'JetBrains Mono', monospace; margin-top: 1px; }
+.lv4c { background: var(--lv4-bg); border-color: var(--lv4-b); color: var(--lv4-t); }
+.lv3c { background: var(--lv3-bg); border-color: var(--lv3-b); color: var(--lv3-t); }
+.lv2c { background: var(--lv2-bg); border-color: var(--lv2-b); color: var(--lv2-t); }
+.lv1c { background: var(--lv1-bg); border-color: var(--lv1-b); color: var(--lv1-t); }
+
+.r-status {
+  background: var(--bg3); border: 1px solid var(--line);
+  border-radius: 6px; padding: 9px 12px;
+  display: flex; align-items: center; gap: 8px;
+  min-height: 40px;
+}
+.r-status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; transition: all .2s; }
+.r-status-txt { font-size: 11px; font-family: 'JetBrains Mono', monospace; }
+.r-btn-row { display: flex; gap: 8px; }
+.r-btn {
+  flex: 1; padding: 11px; border-radius: 7px; border: none;
+  font-size: 12px; font-weight: 700;
+  font-family: 'Barlow', sans-serif; cursor: pointer; transition: all .12s;
+}
+.r-submit { background: linear-gradient(135deg, var(--blue), var(--blue-l)); color: white; }
+.r-submit:disabled { opacity: .3; cursor: not-allowed; }
+.r-clear { background: var(--bg4); color: var(--t3); }
+
+/* USER LIST TAB */
+.ul-body { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.ul-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+.ul-stat {
+  background: var(--bg3); border: 1px solid var(--line);
+  border-radius: 7px; padding: 10px; text-align: center;
+}
+.ul-stat-n { font-size: 22px; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+.ul-stat-l { font-size: 8px; color: var(--t4); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+.ul-list { background: var(--bg2); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.ul-hdr {
+  display: grid; grid-template-columns: 48px 1fr 100px 90px 80px;
+  padding: 8px 14px; background: var(--bg3);
+  border-bottom: 2px solid var(--line);
+  font-size: 8px; font-weight: 700; color: var(--t4);
+  letter-spacing: 1.5px; text-transform: uppercase;
+  font-family: 'JetBrains Mono', monospace;
+  gap: 10px;
+}
+.ul-row {
+  display: grid; grid-template-columns: 48px 1fr 100px 90px 80px;
+  padding: 10px 14px; gap: 10px; align-items: center;
+  border-bottom: 1px solid rgba(30,45,69,.5);
+  transition: background .1s; cursor: pointer;
+}
+.ul-row:last-child { border-bottom: none; }
+.ul-row:hover { background: var(--bg3); }
+.ul-pin {
+  width: 36px; height: 36px; border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 800;
+  font-family: 'JetBrains Mono', monospace;
+}
+.ul-name { font-size: 12px; font-weight: 600; color: var(--t0); }
+.ul-sub  { font-size: 9px; color: var(--t3); font-family: 'JetBrains Mono', monospace; margin-top: 2px; }
+.lv-pill {
+  display: inline-flex; align-items: center;
+  padding: 2px 7px; border-radius: 4px;
+  font-size: 9px; font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+}
+.st-pill {
+  padding: 2px 7px; border-radius: 3px;
+  font-size: 9px; font-weight: 700; font-family: 'JetBrains Mono', monospace;
+}
+.st-on  { background: var(--gbg);  color: var(--green-l); border: 1px solid var(--green); }
+.st-off { background: var(--rbg);  color: var(--red-l);   border: 1px solid var(--red); }
+.st-prot{ background: var(--bg3);  color: var(--t4);      border: 1px solid var(--bg5); }
+
+/* ── POPUP 4 — AUDIT LOG ─────────────────────── */
+#p4 { background: var(--bg1); border: 2px solid var(--line); max-width: 900px; }
+.log-toolbar {
+  background: var(--bg2); border-bottom: 1px solid var(--line);
+  padding: 10px 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.log-count {
+  font-size: 10px; color: var(--t3);
+  font-family: 'JetBrains Mono', monospace;
+  margin-right: auto;
+}
+.log-btn {
+  padding: 6px 14px; border-radius: 5px; border: 1px solid var(--bg5);
+  background: var(--bg3); color: var(--t2);
+  font-size: 10px; font-weight: 700;
+  font-family: 'Barlow', sans-serif; cursor: pointer; transition: all .12s;
+  display: flex; align-items: center; gap: 5px;
+}
+.log-btn:hover { border-color: var(--blue); color: var(--cyan-l); }
+.log-btn.export { background: var(--gbg); border-color: var(--green); color: var(--green-l); }
+.log-body { overflow-y: auto; max-height: 360px; }
+.log-hdr {
+  display: grid;
+  grid-template-columns: 155px 90px 45px 1fr 90px 90px;
+  padding: 7px 14px;
+  background: var(--bg3); position: sticky; top: 0;
+  border-bottom: 2px solid var(--line);
+  font-size: 8px; font-weight: 700; color: var(--t4);
+  letter-spacing: 1.5px; text-transform: uppercase;
+  font-family: 'JetBrains Mono', monospace; gap: 8px;
+}
+.log-row {
+  display: grid;
+  grid-template-columns: 155px 90px 45px 1fr 90px 90px;
+  padding: 8px 14px; gap: 8px; align-items: center;
+  border-bottom: 1px solid rgba(30,45,69,.4);
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  transition: background .1s;
+}
+.log-row:hover { background: var(--bg2); }
+.ev-badge {
+  padding: 1px 6px; border-radius: 3px;
+  font-size: 8px; font-weight: 700;
+}
+.ev-ok    { background: var(--gbg);  color: var(--green-l); border: 1px solid var(--green); }
+.ev-reg   { background: var(--gbg);  color: var(--green-l); border: 1px solid var(--green); }
+.ev-del   { background: var(--ambg); color: var(--ambl);    border: 1px solid var(--amber); }
+.ev-deny  { background: var(--rbg);  color: var(--red-l);   border: 1px solid var(--red); }
+.ev-auth  { background: var(--bg3);  color: var(--cyan-l);  border: 1px solid var(--cyan); }
+.log-export-ok {
+  margin: 12px 16px;
+  background: var(--gbg); border: 1px solid var(--green);
+  border-radius: 7px; padding: 10px 14px;
+  display: none; align-items: center; gap: 10px;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--green-l);
+}
+
+/* ── ACTION BOTTOM SHEET ──────────────────────── */
+.sheet-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,.82);
+  display: none; align-items: flex-end;
+}
+.sheet-overlay.show { display: flex; }
+.sheet {
+  width: 100%; background: var(--bg1);
+  border-top: 2px solid var(--line);
+  border-radius: 16px 16px 0 0;
+  padding: 20px 18px 36px;
+  animation: slideUp .25s ease;
+  max-width: 600px; margin: 0 auto;
+}
+@keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+.sheet-handle { width: 36px; height: 4px; background: var(--bg5); border-radius: 2px; margin: 0 auto 18px; }
+.sheet-user-card {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--bg2); border: 1px solid var(--line);
+  border-radius: 10px; padding: 12px; margin-bottom: 16px;
+}
+.sheet-pin {
+  width: 44px; height: 44px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 800;
+  font-family: 'JetBrains Mono', monospace; flex-shrink: 0;
+}
+.sheet-name { font-size: 14px; font-weight: 700; color: var(--t0); }
+.sheet-sub  { font-size: 10px; color: var(--t3); font-family: 'JetBrains Mono', monospace; margin-top: 3px; }
+.sheet-actions { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.sheet-action {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--bg3); border: 1px solid var(--line);
+  border-radius: 10px; padding: 14px; cursor: pointer;
+  transition: all .12s; -webkit-tap-highlight-color: transparent;
+}
+.sheet-action:hover { background: var(--bg4); }
+.sheet-action.danger { background: var(--rbg); border-color: var(--red); }
+.sheet-action.protected { opacity: .3; cursor: not-allowed; }
+.sa-icon { font-size: 22px; flex-shrink: 0; }
+.sa-title { font-size: 13px; font-weight: 700; color: var(--t0); }
+.sa-sub   { font-size: 10px; color: var(--t4); font-family: 'JetBrains Mono', monospace; margin-top: 2px; }
+.sheet-action.danger .sa-title { color: var(--red-l); }
+.sheet-cancel {
+  width: 100%; padding: 13px; border-radius: 8px;
+  border: 1px solid var(--line); background: var(--bg2);
+  color: var(--t2); font-size: 13px; font-weight: 600;
+  font-family: 'Barlow', sans-serif; cursor: pointer;
+}
+
+/* ── DELETE CONFIRM ───────────────────────────── */
+.del-confirm {
+  position: fixed; inset: 0; z-index: 600;
+  background: rgba(0,0,0,.88);
+  display: none; align-items: center; justify-content: center; padding: 24px;
+}
+.del-confirm.show { display: flex; }
+.del-card {
+  width: 100%; max-width: 360px;
+  background: var(--bg1); border: 2px solid var(--red);
+  border-radius: 14px; padding: 24px;
+  animation: popIn .2s ease;
+}
+.del-icon { font-size: 36px; text-align: center; margin-bottom: 10px; }
+.del-title { font-size: 16px; font-weight: 800; color: var(--red-l); text-align: center; margin-bottom: 6px; }
+.del-name  { font-size: 14px; font-weight: 600; color: var(--t0); text-align: center; }
+.del-meta  { font-size: 10px; color: var(--t3); text-align: center; font-family: 'JetBrains Mono', monospace; margin-top: 4px; margin-bottom: 16px; }
+.del-steps { background: var(--bg2); border: 1px solid var(--line); border-radius: 8px; padding: 12px; margin-bottom: 16px; }
+.del-step  { font-size: 10px; color: var(--t1); font-family: 'JetBrains Mono', monospace; line-height: 1.9; }
+.del-btns  { display: flex; gap: 10px; }
+.del-cancel { flex:1; padding:12px; border-radius:7px; border:1px solid var(--line); background:var(--bg2); color:var(--t2); font-size:13px; font-weight:600; font-family:'Barlow',sans-serif; cursor:pointer; }
+.del-ok     { flex:1; padding:12px; border-radius:7px; border:none; background:var(--red); color:white; font-size:13px; font-weight:700; font-family:'Barlow',sans-serif; cursor:pointer; }
+
+/* PROGRESS MODAL */
+.prog-modal {
+  position: fixed; inset: 0; z-index: 700;
+  background: rgba(0,0,0,.9);
+  display: none; align-items: center; justify-content: center; padding: 24px;
+}
+.prog-modal.show { display: flex; }
+.prog-card {
+  width: 100%; max-width: 340px;
+  background: var(--bg1); border: 1px solid var(--line);
+  border-radius: 14px; padding: 24px;
+  animation: popIn .2s ease;
+}
+.prog-title { font-size: 13px; font-weight: 700; color: var(--t0); text-align: center; margin-bottom: 16px; }
+.prog-steps { display: flex; flex-direction: column; gap: 8px; }
+.prog-step {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border-radius: 7px;
+  background: var(--bg2); border: 1px solid var(--line);
+  transition: all .2s;
+}
+.prog-step.active { background: rgba(37,99,235,.1); border-color: var(--blue); }
+.prog-step.done   { background: rgba(16,185,129,.07); border-color: var(--green); }
+.prog-step.fail   { background: rgba(239,68,68,.07);  border-color: var(--red); }
+.ps-ico  { font-size: 16px; flex-shrink: 0; }
+.ps-txt  { font-size: 11px; font-weight: 600; }
+.ps-sub  { font-size: 9px; color: var(--t4); font-family: 'JetBrains Mono', monospace; margin-top: 2px; }
+.prog-result { margin-top: 14px; display: none; }
+
+/* ── SPINNER ──────────────────────────────────── */
+.spin { width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.2);
+  border-top-color:white;animation:rot .6s linear infinite;display:none; }
+.spin.on { display:inline-block; }
+@keyframes rot{to{transform:rotate(360deg)}}
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+.fu { animation: fadeUp .3s ease forwards; }
+</style>
+
+</head>
+<body>
+<div class="app">
+
+<!-- TOPBAR -->
+
+<header class="topbar">
+  <div class="tb-logo">
+    <div class="tb-mark">BV</div>
+    <div>
+      <div class="tb-name">HMI Popups — Bel Vietnam ST3</div>
+      <div class="tb-sub">F35 Auth System | Rev 2.0</div>
+    </div>
+  </div>
+  <div class="tb-sim"><div class="sim-dot"></div><span class="sim-txt">SIMULATION</span></div>
+</header>
+
+<!-- MENU -->
+
+<nav class="menubar">
+  <button class="menu-btn active" onclick="showPage('p1',this)">① Welcome</button>
+  <div class="menu-sep"></div>
+  <button class="menu-btn" onclick="showPage('p2',this)">② Access Error</button>
+  <div class="menu-sep"></div>
+  <button class="menu-btn" onclick="showPage('p3',this)">③ User Management</button>
+  <div class="menu-sep"></div>
+  <button class="menu-btn" onclick="showPage('p4',this)">④ Audit Log</button>
+</nav>
+
+<!-- ════════════════════════════════════════
+     POPUP 1 — WELCOME
+════════════════════════════════════════ -->
+
+<div id="page-p1">
+<div class="sim-bar">
+  <div class="sim-sec">
+    <span class="sim-lbl">Caller:</span>
+    <button class="cb on" id="w1" onclick="setWelcomeUser(1,this)">Operator Lv1</button>
+    <button class="cb"    id="w2" onclick="setWelcomeUser(2,this)">Supervisor Lv2</button>
+    <button class="cb"    id="w3" onclick="setWelcomeUser(3,this)">Technician Lv3</button>
+    <button class="cb"    id="w4" onclick="setWelcomeUser(4,this)">Admin Lv4</button>
+  </div>
+</div>
+<div class="popup-wrap">
+  <div class="popup" id="p1">
+    <div class="w-level-strip" id="wStrip"></div>
+    <div class="p-hdr" style="background:var(--bg3)">
+      <span class="p-title" id="wPTitle" style="color:var(--cyan-l)">WELCOME</span>
+      <span class="p-clock" id="wClock">--:--:--</span>
+    </div>
+    <div class="w-body">
+      <div class="w-greeting">
+        <div class="w-avatar" id="wAvatar">?</div>
+        <div style="flex:1;min-width:0">
+          <div class="w-name" id="wName">—</div>
+          <div class="w-empid" id="wEmpId">—</div>
+        </div>
+        <div class="w-badge" id="wBadge">—</div>
+      </div>
+      <div class="w-countdown-section">
+        <div class="w-cd-row">
+          <span class="w-cd-lbl">Session remaining</span>
+          <span class="w-cd-num" id="wCountdown">1800</span>
+        </div>
+        <div class="w-progress">
+          <div class="w-progress-fill" id="wBar" style="width:100%"></div>
+        </div>
+      </div>
+      <div class="w-info-row">
+        <div class="w-info-cell">
+          <div class="w-ic-lbl">DB211.SessionAccessLevel</div>
+          <div class="w-ic-val" id="wLevel">—</div>
+        </div>
+        <div class="w-info-cell">
+          <div class="w-ic-lbl">WinCC Auto-Login</div>
+          <div class="w-ic-val" id="wWinCC" style="color:var(--green-l)">—</div>
+        </div>
+        <div class="w-info-cell">
+          <div class="w-ic-lbl">Scan Time</div>
+          <div class="w-ic-val" id="wTime">—</div>
+        </div>
+        <div class="w-info-cell">
+          <div class="w-ic-lbl">F35 PIN</div>
+          <div class="w-ic-val" id="wPin">—</div>
+        </div>
+      </div>
+      <div class="w-btn-row">
+        <button class="w-btn w-logout" onclick="simLogout()">Logout</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════
+     POPUP 2 — ACCESS ERROR
+════════════════════════════════════════ -->
+
+<div id="page-p2" style="display:none">
+<div class="sim-bar">
+  <div class="sim-sec">
+    <span class="sim-lbl">Scenario:</span>
+    <button class="cb on" id="e0" onclick="setError(0,this)">Inactive User</button>
+    <button class="cb"    id="e1" onclick="setError(1,this)">PIN > 35</button>
+    <button class="cb"    id="e2" onclick="setError(2,this)">Timeout Warn</button>
+  </div>
+</div>
+<div class="popup-wrap">
+  <div class="popup" id="p2" style="border:2px solid var(--red)">
+    <div class="p-hdr" id="eHdr" style="background:#2d0808">
+      <span class="p-title" id="eTitle" style="color:var(--red-l)">ACCESS DENIED</span>
+      <span class="p-clock" id="eClock">--:--:--</span>
+    </div>
+    <div class="e-body">
+      <div class="e-icon-wrap" id="eIconWrap" style="background:rgba(239,68,68,.12)">
+        <span id="eIcon">🚫</span>
+      </div>
+      <div class="e-title" id="eErrTitle" style="color:var(--red-l)">Access Denied</div>
+      <div class="e-msg" id="eMsg">Fingerprint not recognized<br>Please scan again</div>
+      <div class="e-code-row">
+        <span class="e-code-lbl">AuthErrorCode — DB210.DBW26</span>
+        <span class="e-code-val" id="eCode" style="color:var(--red-l)">1</span>
+      </div>
+      <div class="e-autoclose">
+        <div class="e-ac-row">
+          <span class="e-ac-lbl" id="eAcTxt">Auto-close in 5s</span>
+        </div>
+        <div class="e-ac-bar">
+          <div class="e-ac-fill" id="eAcFill" style="width:100%;background:var(--red)"></div>
+        </div>
+      </div>
+      <div class="e-btn-row">
+        <button class="e-btn e-close" onclick="restartAC()">Close</button>
+        <button class="e-btn e-retry" onclick="restartAC()">Scan Again ▶</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════
+     POPUP 3 — USER MANAGEMENT
+════════════════════════════════════════ -->
+
+<div id="page-p3" style="display:none">
+<div class="sim-bar">
+  <div class="sim-sec">
+    <span class="sim-lbl">Logged in as:</span>
+    <button class="cb on" id="um4" onclick="setUMCaller(4,this)">Admin Lv4</button>
+    <button class="cb"    id="um2" onclick="setUMCaller(2,this)">Supervisor Lv2</button>
+    <button class="cb"    id="um3" onclick="setUMCaller(3,this)">Technician Lv3</button>
+  </div>
+</div>
+<div class="popup-wrap">
+  <div class="popup" id="p3">
+    <div class="p-hdr" style="background:var(--bg3)">
+      <span class="p-title" style="color:var(--cyan-l)">USER MANAGEMENT</span>
+      <span class="p-clock" id="umClock">--:--:--</span>
+    </div>
+    <!-- PERMISSION DENIED MSG -->
+    <div id="umDenied" style="display:none;padding:40px;text-align:center">
+      <div style="font-size:36px;margin-bottom:12px">🔒</div>
+      <div style="font-size:15px;font-weight:700;color:var(--red-l);margin-bottom:8px">Access Denied</div>
+      <div style="font-size:11px;color:var(--t3);font-family:'JetBrains Mono',monospace">
+        Level 3 (Technician) và Level 1 (Operator)<br>không có quyền quản lý user
+      </div>
+    </div>
+    <!-- TABS -->
+    <div id="umAllowed">
+      <div class="um-tabs">
+        <button class="um-tab on" id="umt1" onclick="setUMTab('reg',this)">Register User</button>
+        <button class="um-tab"    id="umt2" onclick="setUMTab('list',this)">User List <span id="umCount" style="font-size:9px;background:var(--blue);color:white;padding:1px 5px;border-radius:8px;margin-left:4px">6</span></button>
+      </div>
+
+      <!-- REGISTER TAB -->
+      <div id="umTabReg" class="reg-body">
+        <div class="r-section">
+          <div class="r-sec-lbl">User Information</div>
+          <div class="fg2">
+            <div class="r-field">
+              <label class="r-lbl">F35 PIN <span class="req">*</span></label>
+              <input class="r-inp hi" type="number" id="rPin" min="1" max="35" placeholder="1 – 35" oninput="onRegPin(this)">
+              <span class="r-hint" id="rPinHint">PIN determines level automatically</span>
+            </div>
+            <div class="r-field">
+              <label class="r-lbl">Employee ID</label>
+              <input class="r-inp" type="text" id="rEmpId" placeholder="e.g. EMP007" maxlength="16">
+            </div>
+          </div>
+          <div class="r-field">
+            <label class="r-lbl">Full Name <span class="req">*</span></label>
+            <input class="r-inp hi" type="text" id="rName" placeholder="Full name..." maxlength="32">
+          </div>
+          <div class="r-field">
+            <label class="r-lbl">Department</label>
+            <input class="r-inp" type="text" id="rDept" placeholder="EQSU / PROD / QA" maxlength="16">
+          </div>
+        </div>
+        <div class="r-section">
+          <div class="r-sec-lbl">Access Level — Auto from PIN</div>
+          <div class="lv-grid">
+            <div class="lvb lv4c" id="rlv4" style="opacity:.15"><div class="lvb-n">4</div><div class="lvb-name">ADMIN</div><div class="lvb-range">PIN 1–5</div></div>
+            <div class="lvb lv3c" id="rlv3" style="opacity:.15"><div class="lvb-n">3</div><div class="lvb-name">TECHNICIAN</div><div class="lvb-range">PIN 6–15</div></div>
+            <div class="lvb lv2c" id="rlv2" style="opacity:.15"><div class="lvb-n">2</div><div class="lvb-name">SUPERVISOR</div><div class="lvb-range">PIN 16–25</div></div>
+            <div class="lvb lv1c" id="rlv1" style="opacity:.15"><div class="lvb-n">1</div><div class="lvb-name">OPERATOR</div><div class="lvb-range">PIN 26–35</div></div>
+          </div>
+          <div id="rLvNote" style="font-size:9px;color:var(--t4);text-align:center;font-family:'JetBrains Mono',monospace;padding:6px;background:var(--bg2);border-radius:4px;border:1px solid var(--line)">Enter PIN to see assigned level</div>
+          <div class="r-status">
+            <div class="r-status-dot" id="rDot" style="background:var(--t4)"></div>
+            <span class="r-status-txt" id="rStatusTxt" style="color:var(--t3)">Ready</span>
+          </div>
+          <div class="r-btn-row">
+            <button class="r-btn r-submit" id="rBtn" onclick="doRegister()">
+              <span id="rBtnLbl">Register ▶</span>
+              <span class="spin" id="rSpin"></span>
+            </button>
+            <button class="r-btn r-clear" onclick="clearReg()">Clear</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- USER LIST TAB -->
+      <div id="umTabList" style="display:none">
+        <div class="ul-body">
+          <div class="ul-stats" id="ulStats"></div>
+          <div class="ul-list">
+            <div class="ul-hdr">
+              <span>PIN</span><span>Name / EmpID</span><span>Level</span><span>Status</span><span>Action</span>
+            </div>
+            <div id="ulBody"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════
+     POPUP 4 — AUDIT LOG
+════════════════════════════════════════ -->
+
+<div id="page-p4" style="display:none">
+<div class="popup-wrap">
+  <div class="popup" id="p4">
+    <div class="p-hdr" style="background:var(--bg3)">
+      <span class="p-title" style="color:var(--cyan-l)">AUDIT LOG</span>
+      <span class="p-clock" id="logClock">--:--:--</span>
+    </div>
+    <div class="log-toolbar">
+      <span class="log-count" id="logCount">0 entries</span>
+      <button class="log-btn" onclick="addMockLog()">+ Add Mock Entry</button>
+      <button class="log-btn export" onclick="exportCSV()">⬇ Export CSV to USB</button>
+    </div>
+    <div id="logExportOk" class="log-export-ok">
+      <span style="font-size:20px">✅</span>
+      <div>
+        <div style="font-weight:700">Export successful</div>
+        <div style="font-size:9px;color:var(--green);margin-top:2px" id="logExportPath">/mnt/usb/audit_log_export.csv</div>
+      </div>
+    </div>
+    <div class="log-hdr">
+      <span>Timestamp</span><span>Event</span><span>PIN</span><span>Name</span><span>Level</span><span>By</span>
+    </div>
+    <div class="log-body" id="logBody">
+      <div style="padding:40px;text-align:center;color:var(--t4);font-family:'JetBrains Mono',monospace;font-size:11px">
+        No log entries yet — register or delete users to see entries
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ACTION SHEET -->
+
+<div class="sheet-overlay" id="actionSheet" onclick="closeSheet(event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-user-card" id="sheetUserCard"></div>
+    <div class="sheet-actions" id="sheetActions"></div>
+    <button class="sheet-cancel" onclick="closeSheet()">Cancel</button>
+  </div>
+</div>
+
+<!-- DELETE CONFIRM -->
+
+<div class="del-confirm" id="delConfirm">
+  <div class="del-card">
+    <div class="del-icon">🗑</div>
+    <div class="del-title">Delete User?</div>
+    <div class="del-name" id="delName">—</div>
+    <div class="del-meta" id="delMeta">—</div>
+    <div class="del-steps">
+      <div class="del-step">① Deny immediately — isActive=false</div>
+      <div class="del-step">② Call F35 API → delete fingerprint</div>
+      <div class="del-step">③ Remove from users.json</div>
+      <div class="del-step">④ Write audit log</div>
+    </div>
+    <div class="del-btns">
+      <button class="del-cancel" onclick="closeDelConfirm()">Cancel</button>
+      <button class="del-ok" id="delOkBtn">Delete ✕</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROGRESS MODAL -->
+
+<div class="prog-modal" id="progModal">
+  <div class="prog-card">
+    <div class="prog-title" id="progTitle">Processing...</div>
+    <div class="prog-steps" id="progSteps"></div>
+    <div class="prog-result" id="progResult"></div>
+  </div>
+</div>
+
+<script>
+// ── STATE ──────────────────────────────────────────
+const LV = {
+  4:{n:'Admin',     bg:'var(--lv4-bg)',b:'var(--lv4-b)',t:'var(--lv4-t)',wincc:'Admin'},
+  3:{n:'Technician',bg:'var(--lv3-bg)',b:'var(--lv3-b)',t:'var(--lv3-t)',wincc:'Technics'},
+  2:{n:'Supervisor',bg:'var(--lv2-bg)',b:'var(--lv2-b)',t:'var(--lv2-t)',wincc:'Supervisor'},
+  1:{n:'Operator',  bg:'var(--lv1-bg)',b:'var(--lv1-b)',t:'var(--lv1-t)',wincc:'Operator'},
+};
+const USERS_INIT = {
+  '1': {pin:1,name:'Ha Duc Huy',       empId:'B381',   dept:'EQSU',isActive:true,  protected:true},
+  '2': {pin:2,name:'Mai Doan Nhu Thuan',empId:'EMP002',dept:'EQSU',isActive:true,  protected:false},
+  '3': {pin:3,name:'Le Thanh Hai',     empId:'EMP003', dept:'EQSU',isActive:true,  protected:false},
+  '6': {pin:6,name:'Nguyen Nhat Ky',   empId:'EMP006', dept:'EQSU',isActive:true,  protected:false},
+  '16':{pin:16,name:'Le Trinh H.Duong',empId:'EMP016', dept:'PROD',isActive:true,  protected:false},
+  '26':{pin:26,name:'Nguyen Van Op',   empId:'EMP026', dept:'PROD',isActive:false, protected:false},
+};
+let DB = { users: JSON.parse(JSON.stringify(USERS_INIT)), logs: [], callerLv: 4 };
+
+function pinToLevel(p){ p=parseInt(p); if(p>=1&&p<=5)return 4; if(p>=6&&p<=15)return 3; if(p>=16&&p<=25)return 2; if(p>=26&&p<=35)return 1; return 0; }
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+function nowTS(){ return new Date().toISOString().replace('T',' ').slice(0,19); }
+
+// ── NAVIGATION ─────────────────────────────────────
+function showPage(id, btn){
+  ['p1','p2','p3','p4'].forEach(p=>document.getElementById('page-'+p).style.display='none');
+  document.querySelectorAll('.menu-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).style.display='block';
+  btn.classList.add('active');
+  if(id==='p4') renderLog();
+  if(id==='p3') renderUserList();
+}
+
+// ── CLOCK ──────────────────────────────────────────
+setInterval(()=>{
+  const t = new Date().toTimeString().slice(0,8);
+  ['wClock','eClock','umClock','logClock'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.textContent=t;
+  });
+}, 1000);
+
+// ═══════════════════════════════════════════════════
+// POPUP 1 — WELCOME
+// ═══════════════════════════════════════════════════
+const W_USERS = {
+  1:{pin:'26',name:'Nguyen Van Op',    empId:'EMP026'},
+  2:{pin:'16',name:'Le Trinh H.Duong', empId:'EMP016'},
+  3:{pin:'6', name:'Nguyen Nhat Ky',   empId:'EMP006'},
+  4:{pin:'1', name:'Ha Duc Huy',       empId:'B381'},
+};
+// Session timeout per level (seconds)
+const SESSION_TIMEOUT = { 1: 1800, 2: 600, 3: 600, 4: 300 };
+// 1=Operator 30min | 2=Supervisor 10min | 3=Technician 10min | 4=Admin 5min
+
+let wLv=1, wRemain=SESSION_TIMEOUT[1], wTimer=null;
+
+function setWelcomeUser(lv, btn){
+  wLv=lv; wRemain=SESSION_TIMEOUT[lv]||300;
+  document.querySelectorAll('.cb[id^=w]').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  applyWelcome(lv);
+  startCountdown();
+}
+
+function applyWelcome(lv){
+  const info=LV[lv], u=W_USERS[lv];
+  document.getElementById('wStrip').style.background = info.t;
+  document.getElementById('wAvatar').style.background = info.bg;
+  document.getElementById('wAvatar').style.border = '2px solid '+info.b;
+  document.getElementById('wAvatar').style.color = info.t;
+  document.getElementById('wAvatar').textContent = u.pin;
+  document.getElementById('wName').textContent   = u.name;
+  document.getElementById('wEmpId').textContent  = u.empId+' · '+info.n;
+  document.getElementById('wBadge').style.background  = info.bg;
+  document.getElementById('wBadge').style.border       = '1px solid '+info.b;
+  document.getElementById('wBadge').style.color        = info.t;
+  document.getElementById('wBadge').textContent        = 'Level '+lv+' — '+info.n;
+  document.getElementById('wLevel').textContent  = lv;
+  document.getElementById('wLevel').style.color  = info.t;
+  document.getElementById('wWinCC').textContent  = info.wincc;
+  document.getElementById('wTime').textContent   = new Date().toTimeString().slice(0,8);
+  document.getElementById('wPin').textContent    = '#'+u.pin;
+  const timeoutMin = {1:'30 min',2:'10 min',3:'10 min',4:'5 min'};
+  document.querySelector('.w-cd-lbl').textContent = 'Session remaining ('+timeoutMin[lv]+')';
+  document.getElementById('wBar').style.background = info.t;
+}
+
+function startCountdown(){
+  if(wTimer) clearInterval(wTimer);
+  const total = SESSION_TIMEOUT[wLv]||300;
+  wTimer=setInterval(()=>{
+    wRemain--;
+    if(wRemain<0){ wRemain=0; clearInterval(wTimer); }
+    const el=document.getElementById('wCountdown');
+    if(el) el.textContent=wRemain;
+    const ratio=wRemain/total;
+    const bar=document.getElementById('wBar');
+    if(bar) bar.style.width=(ratio*100)+'%';
+  },1000);
+}
+
+function simLogout(){
+  alert('Simulate logout here');
+}
+
+// (The rest of your JS would continue here: error popup logic, user management,
+// audit log rendering, exportCSV, action sheet, delete confirm, etc.)
+
+</script>
+</div>
+</body>
+</html>
